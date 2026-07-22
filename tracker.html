@@ -1244,10 +1244,11 @@ loadFromLinkedJsonIfAvailable().then(function(parsed){
     data = parsed;
     renderAll();
   }
-});
-loadFromSupabaseIfNewer().then(function(payload){
+  return loadFromSupabaseIfNewer();
+}).then(function(payload){
   if(payload){
     data = payload;
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
     renderAll();
   }
 });
