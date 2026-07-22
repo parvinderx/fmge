@@ -1,23 +1,26 @@
 create table if not exists public.fmge_tracker_state (
-  user_id uuid primary key references auth.users(id) on delete cascade,
+  id text primary key,
   payload jsonb not null,
   updated_at timestamptz not null default now()
 );
 
 alter table public.fmge_tracker_state enable row level security;
 
-create policy "Users can read their own tracker state"
+create policy "Anyone with the anon key can read tracker state"
   on public.fmge_tracker_state
   for select
-  using (auth.uid() = user_id);
+  to anon
+  using (true);
 
-create policy "Users can insert their own tracker state"
+create policy "Anyone with the anon key can insert tracker state"
   on public.fmge_tracker_state
   for insert
-  with check (auth.uid() = user_id);
+  to anon
+  with check (true);
 
-create policy "Users can update their own tracker state"
+create policy "Anyone with the anon key can update tracker state"
   on public.fmge_tracker_state
   for update
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+  to anon
+  using (true)
+  with check (true);
