@@ -361,8 +361,8 @@ tr:last-child td{border-bottom:none;}
 var STORAGE_KEY = "fmge_tracker_v1";
 var FILE_SYNC_KEY = "fmge_tracker_file_sync_v1";
 var DATA_FILE_NAME = "fmge-tracker-data.json";
-var SUPABASE_URL = "";
-var SUPABASE_ANON_KEY = "";
+var SUPABASE_URL = "https://ctkcuybglrtjoljjmqdg.supabase.co";
+var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0a2N1eWJnbHJ0am9samptcWRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2OTI4MjQsImV4cCI6MjEwMDI2ODgyNH0.j7L3T7N1ay3Ve2kjKLXV2r6Y6gGOhTKt-H2IWMAsJ5A";
 var SYNC_ROW_ID = "default";
 var EXAM_DATE = "2027-01-09";
 var TL_START = "2026-07-22";
@@ -518,6 +518,44 @@ async function loadFromLinkedJsonIfAvailable(){
     }
   }catch(e){}
   return null;
+}
+
+function updateCloudSyncStatus(message, ok){
+  var status = document.getElementById("cloudSyncStatus");
+  if(!status) return;
+  status.textContent = message;
+  status.style.color = ok ? "var(--success)" : "var(--muted)";
+}
+
+var cloudSync = { client: null };
+function getSupabaseClient(){
+  if(!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
+  if(!cloudSync.client){
+    cloudSync.client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  return cloudSync.client;
+}
+
+async function loadFromSupabaseIfNewer(){
+  var client = getSupabaseClient();
+  if(!client){
+    updateCloudSyncStatus("Cloud sync: not configured", false);
+    return null;
+  }
+  try{
+    var result = await client.from("fmge_tracker_state").select("payload, updated_at").eq("id", SYNC_ROW_ID).maybeSingle();
+    if(result.error) throw result.error;
+    updateCloudSyncStatus("Cloud sync: saved", true);
+    var row = result.data;
+    if(!row || !row.payload || !Array.isArray(row.payload.milestones)) return null;
+    var localSaved = data.lastSaved ? new Date(data.lastSaved).getTime() : 0;
+    var remoteSaved = row.updated_at ? new Date(row.updated_at).getTime() : 0;
+    if(remoteSaved > localSaved) return row.payload;
+    return null;
+  }catch(e){
+    updateCloudSyncStatus("Cloud sync: offline — saved locally only", false);
+    return null;
+  }
 }
 
 var data = loadData();
@@ -1185,6 +1223,12 @@ void refreshFileSyncStatus();
 loadFromLinkedJsonIfAvailable().then(function(parsed){
   if(parsed){
     data = parsed;
+    renderAll();
+  }
+});
+loadFromSupabaseIfNewer().then(function(payload){
+  if(payload){
+    data = payload;
     renderAll();
   }
 });
