@@ -352,6 +352,7 @@ tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
 "use strict";
@@ -359,6 +360,9 @@ tr:last-child td{border-bottom:none;}
 var STORAGE_KEY = "fmge_tracker_v1";
 var FILE_SYNC_KEY = "fmge_tracker_file_sync_v1";
 var DATA_FILE_NAME = "fmge-tracker-data.json";
+var SUPABASE_URL = "";
+var SUPABASE_ANON_KEY = "";
+var SYNC_ROW_ID = "default";
 var EXAM_DATE = "2027-01-09";
 var TL_START = "2026-07-22";
 var TL_END = "2027-01-09";
