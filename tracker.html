@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>FMGE Prep Tracker</title>
+<meta name="theme-color" content="#1e40af">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<style>
+:root{
+  --bg:#f2f5fa; --card:#ffffff; --primary:#2563eb; --primary-dark:#1e40af;
+  --accent:#0d9488; --success:#16a34a; --success-bg:#dcfce7; --warning:#f59e0b; --warning-bg:#fef3c7;
+  --danger:#dc2626; --danger-bg:#fee2e2; --text:#1e293b; --muted:#64748b; --border:#e2e8f0;
+  --radius:14px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--text); padding-bottom:60px; -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;}
+button{font-family:inherit; cursor:pointer;}
+input,textarea,select{font-family:inherit; font-size:15px;}
+
+/* ---------- Header ---------- */
+header{
+  position:sticky; top:0; z-index:50; background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+  color:#fff; padding:14px 18px; box-shadow:0 2px 10px rgba(0,0,0,.12);
+}
+.header-row{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+.brand{display:flex; align-items:center; gap:10px;}
+.brand h1{font-size:18px; margin:0; font-weight:700; letter-spacing:.2px;}
+.brand .sub{font-size:11px; opacity:.85; margin-top:1px;}
+.header-actions{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.chip{
+  background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.25); border-radius:999px;
+  padding:6px 12px; font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:6px;
+}
+.icon-btn{
+  background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25); color:#fff;
+  border-radius:10px; padding:8px 12px; font-size:13px; font-weight:600; min-height:38px;
+}
+.icon-btn:active{background:rgba(255,255,255,.28);}
+.saved-indicator{font-size:11px; opacity:.85; display:flex; align-items:center; gap:5px;}
+.saved-dot{width:7px; height:7px; border-radius:50%; background:#4ade80; box-shadow:0 0 0 0 rgba(74,222,128,.6); transition:box-shadow .3s;}
+.saved-dot.flash{box-shadow:0 0 0 6px rgba(74,222,128,0);}
+
+/* ---------- Tabs ---------- */
+.tabbar{
+  display:flex; gap:6px; overflow-x:auto; padding:10px 14px; background:#fff;
+  border-bottom:1px solid var(--border); position:sticky; top:64px; z-index:40;
+  -webkit-overflow-scrolling:touch; scrollbar-width:none;
+}
+.tabbar::-webkit-scrollbar{display:none;}
+.tab-btn{
+  flex:0 0 auto; padding:10px 16px; border-radius:10px; border:none; background:transparent;
+  color:var(--muted); font-weight:600; font-size:14px; min-height:40px; white-space:nowrap;
+}
+.tab-btn.active{background:var(--primary); color:#fff;}
+
+.wrap{max-width:1000px; margin:0 auto; padding:16px;}
+.hidden{display:none !important;}
+
+/* ---------- Cards / grid ---------- */
+.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;}
+.card{
+  background:var(--card); border-radius:var(--radius); padding:16px; border:1px solid var(--border);
+  box-shadow:0 1px 3px rgba(15,23,42,.04);
+}
+.card h3{margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); font-weight:700;}
+.big-num{font-size:30px; font-weight:800; line-height:1.1;}
+.big-num small{font-size:14px; font-weight:600; color:var(--muted);}
+.stat-sub{font-size:12.5px; color:var(--muted); margin-top:4px;}
+
+/* Donut */
+.donut-wrap{display:flex; align-items:center; gap:16px;}
+.donut{flex:0 0 auto;}
+.donut-label{font-size:22px; font-weight:800;}
+.donut-caption{font-size:12px; color:var(--muted);}
+
+/* Section titles */
+.section-title{font-size:16px; font-weight:800; margin:22px 0 10px; display:flex; align-items:center; gap:8px;}
+.section-title .count{font-size:12px; font-weight:700; color:var(--muted); background:#eef2f7; padding:2px 9px; border-radius:999px;}
+
+/* Bars (subject weighted progress) */
+.bar-row{display:flex; align-items:center; gap:10px; margin-bottom:9px;}
+.bar-label{flex:0 0 190px; font-size:12.5px; color:var(--text); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.bar-track{flex:1; height:12px; background:#eef1f6; border-radius:999px; overflow:hidden;}
+.bar-fill{height:100%; border-radius:999px; transition:width .3s;}
+.bar-fill.done{background:var(--success);}
+.bar-fill.progress{background:var(--warning);}
+.bar-fill.notstarted{background:#cbd5e1;}
+.bar-marks{flex:0 0 44px; font-size:11.5px; color:var(--muted); text-align:right;}
+
+/* Phase groups (Milestones tab) */
+.phase-group{margin-bottom:16px; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; background:#fff;}
+.phase-head{padding:14px 16px; background:#f8fafc; display:flex; justify-content:space-between; align-items:center; cursor:pointer; gap:10px; flex-wrap:wrap;}
+.phase-head-left{display:flex; flex-direction:column; gap:4px; min-width:0;}
+.phase-name{font-weight:800; font-size:14.5px;}
+.phase-dates{font-size:11.5px; color:var(--muted);}
+.phase-head-right{display:flex; align-items:center; gap:10px;}
+.phase-progress-mini{width:70px; height:7px; background:#e2e8f0; border-radius:999px; overflow:hidden;}
+.phase-progress-mini-fill{height:100%; background:var(--primary);}
+.phase-pct{font-size:12px; font-weight:700; color:var(--primary); width:36px; text-align:right;}
+.chevron{transition:transform .2s; color:var(--muted); font-size:13px;}
+.phase-group.open .chevron{transform:rotate(180deg);}
+.phase-body{max-height:0; overflow:hidden; transition:max-height .25s ease;}
+.phase-group.open .phase-body{max-height:4000px;}
+
+.m-card{border-top:1px solid var(--border); padding:12px 16px;}
+.m-head{display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; flex-wrap:wrap;}
+.m-left{display:flex; align-items:center; gap:9px; min-width:0;}
+.status-dot{width:11px; height:11px; border-radius:50%; flex:0 0 auto;}
+.status-dot.notstarted{background:#cbd5e1;}
+.status-dot.progress{background:var(--warning);}
+.status-dot.done{background:var(--success);}
+.m-title{font-size:14px; font-weight:600; overflow:hidden; text-overflow:ellipsis;}
+.m-right{display:flex; align-items:center; gap:8px; flex:0 0 auto;}
+.marks-badge{font-size:11px; font-weight:700; background:#eef2ff; color:#4338ca; padding:3px 8px; border-radius:999px;}
+.planned-dates{font-size:11.5px; color:var(--muted);}
+.m-body{max-height:0; overflow:hidden; transition:max-height .25s ease;}
+.m-card.open .m-body{max-height:600px; margin-top:12px;}
+.status-pills{display:flex; gap:6px; flex-wrap:wrap;}
+.status-pill{
+  padding:8px 12px; border-radius:9px; border:1.5px solid var(--border); background:#fff; font-size:12.5px; font-weight:700;
+  color:var(--muted); min-height:36px;
+}
+.status-pill.sel-notstarted{border-color:#cbd5e1; background:#f1f5f9; color:#475569;}
+.status-pill.sel-progress{border-color:var(--warning); background:var(--warning-bg); color:#92400e;}
+.status-pill.sel-done{border-color:var(--success); background:var(--success-bg); color:#166534;}
+.field-row{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
+.field{flex:1; min-width:130px;}
+.field label{display:block; font-size:11px; color:var(--muted); font-weight:700; margin-bottom:4px; text-transform:uppercase; letter-spacing:.3px;}
+.field input[type=date],.field input[type=number],.field select{
+  width:100%; padding:9px 10px; border:1.5px solid var(--border); border-radius:8px; background:#fff; font-size:14px;
+}
+.field textarea{
+  width:100%; padding:9px 10px; border:1.5px solid var(--border); border-radius:8px; background:#fff; font-size:14px; resize:vertical; min-height:56px;
+}
+
+/* Buttons */
+.btn{padding:10px 16px; border-radius:10px; border:none; font-weight:700; font-size:13.5px; min-height:40px;}
+.btn-primary{background:var(--primary); color:#fff;}
+.btn-primary:active{background:var(--primary-dark);}
+.btn-outline{background:#fff; border:1.5px solid var(--border); color:var(--text);}
+.btn-danger-outline{background:#fff; border:1.5px solid #fecaca; color:var(--danger);}
+.btn-sm{padding:7px 11px; font-size:12px; min-height:32px; border-radius:8px;}
+.btn-block{width:100%;}
+
+/* Forms cards */
+.form-card{background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:16px;}
+.form-card h3{margin:0 0 12px; font-size:15px; font-weight:800;}
+.form-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; align-items:end;}
+
+/* Table */
+.table-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius); background:#fff;}
+table{width:100%; border-collapse:collapse; font-size:13px;}
+th,td{padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); white-space:nowrap;}
+th{background:#f8fafc; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.4px;}
+tr:last-child td{border-bottom:none;}
+.del-btn{background:none; border:none; color:var(--danger); font-size:16px; padding:4px 8px;}
+
+/* Empty state */
+.empty-state{text-align:center; padding:34px 16px; color:var(--muted);}
+.empty-state .emoji{font-size:34px; display:block; margin-bottom:8px;}
+
+/* Heatmap */
+.heatmap-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:6px;}
+.heatmap-grid{display:grid; grid-auto-flow:column; grid-template-rows:repeat(7,13px); gap:3px; width:max-content;}
+.hm-cell{width:13px; height:13px; border-radius:3px; background:#ebedf0; cursor:pointer;}
+.hm-cell.level-1{background:#bbf7d0;}
+.hm-cell.level-2{background:#4ade80;}
+.hm-cell.level-3{background:#16a34a;}
+.hm-cell.level-4{background:#14532d;}
+.hm-legend{display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); margin-top:8px;}
+.hm-legend .hm-cell{cursor:default;}
+.day-detail{margin-top:12px; padding:12px; background:#f8fafc; border-radius:10px; font-size:13px;}
+.day-detail .entry{display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dashed var(--border);}
+.day-detail .entry:last-child{border-bottom:none;}
+
+/* Timeline / Gantt */
+.gantt-row{margin-bottom:20px;}
+.gantt-label-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;}
+.gantt-title{font-weight:800; font-size:13.5px;}
+.gantt-badge{font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px;}
+.gantt-badge.late{background:var(--danger-bg); color:var(--danger);}
+.gantt-badge.early{background:var(--success-bg); color:var(--success);}
+.gantt-badge.ontrack{background:#e0f2fe; color:#0369a1;}
+.gantt-badge.pending{background:#f1f5f9; color:var(--muted);}
+.gantt-track{position:relative; height:16px; background:#eef1f6; border-radius:8px; margin-bottom:4px;}
+.gantt-bar{position:absolute; top:0; height:100%; border-radius:8px;}
+.gantt-planned{background:#c7d2fe;}
+.gantt-actual{position:relative; height:16px; background:#eef1f6; border-radius:8px;}
+.gantt-actual-fill{position:absolute; top:0; height:100%; border-radius:8px; background:var(--primary);}
+.gantt-today-line{position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--danger);}
+.gantt-sub{font-size:11px; color:var(--muted); margin-top:3px;}
+
+/* SVG chart */
+.chart-card svg{width:100%; height:auto; display:block;}
+.chart-legend{display:flex; gap:14px; font-size:12px; color:var(--muted); margin-top:8px; flex-wrap:wrap;}
+.chart-legend .dot{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px;}
+
+.footer-note{text-align:center; font-size:11.5px; color:var(--muted); margin-top:30px; line-height:1.6;}
+
+/* Data panel (export/import) */
+.overlay{position:fixed; inset:0; background:rgba(15,23,42,.45); z-index:100; display:flex; align-items:flex-end; justify-content:center;}
+.sheet{background:#fff; width:100%; max-width:480px; border-radius:18px 18px 0 0; padding:20px; max-height:80vh; overflow-y:auto;}
+@media (min-width:640px){ .overlay{align-items:center;} .sheet{border-radius:18px;} }
+.sheet h2{margin:0 0 4px; font-size:17px;}
+.sheet p{font-size:12.5px; color:var(--muted); margin:0 0 16px;}
+.sheet .btn{margin-bottom:10px;}
+.sync-status{font-size:12px; color:var(--muted); margin:0 0 10px; line-height:1.5;}
+.install-hint{font-size:12px; color:var(--muted); margin:0 0 10px; line-height:1.5;}
+.close-sheet{position:absolute; top:14px; right:16px; background:none; border:none; font-size:20px; color:var(--muted);}
+.sheet-wrap{position:relative;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div class="brand">
+      <div>
+        <h1>FMGE Prep Tracker</h1>
+        <div class="sub">Exam: Jan 9, 2027</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="chip" id="countdownChip">— days left</span>
+      <button class="icon-btn" id="dataBtn">⚙ Data</button>
+      <div class="saved-indicator"><span class="saved-dot" id="savedDot"></span><span id="savedText">Saved</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabbar" id="tabbar">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="milestones">Milestones</button>
+  <button class="tab-btn" data-tab="mocks">Mock Tests</button>
+  <button class="tab-btn" data-tab="studylog">Study Log</button>
+  <button class="tab-btn" data-tab="timeline">Timeline</button>
+</nav>
+
+<div class="wrap">
+
+  <!-- OVERVIEW -->
+  <div class="tab-panel" id="panel-overview">
+    <div class="grid" id="ov-stats"></div>
+
+    <div class="section-title">Subject-wise Coverage <span class="count" id="ov-subject-count"></span></div>
+    <div class="card" id="ov-subject-bars"></div>
+
+    <div class="section-title">Mock Score Trend</div>
+    <div class="card chart-card" id="ov-mock-chart"></div>
+
+    <div class="section-title">Current Phase</div>
+    <div class="card" id="ov-current-phase"></div>
+  </div>
+
+  <!-- MILESTONES -->
+  <div class="tab-panel hidden" id="panel-milestones">
+    <div id="milestones-list"></div>
+  </div>
+
+  <!-- MOCK TESTS -->
+  <div class="tab-panel hidden" id="panel-mocks">
+    <div class="form-card">
+      <h3>Log a Mock Test</h3>
+      <div class="form-grid">
+        <div class="field"><label>Date</label><input type="date" id="mockDate"></div>
+        <div class="field"><label>Score (/300)</label><input type="number" id="mockScore" min="0" max="300" placeholder="e.g. 172"></div>
+        <div class="field"><label>Part A (/100)</label><input type="number" id="mockPartA" min="0" max="100" placeholder="optional"></div>
+        <div class="field"><label>Part B (/200)</label><input type="number" id="mockPartB" min="0" max="200" placeholder="optional"></div>
+      </div>
+      <div class="field" style="margin-top:10px;"><label>Notes</label><input type="text" id="mockNotes" placeholder="e.g. Weak in Pathology section"></div>
+      <button class="btn btn-primary btn-block" style="margin-top:12px;" id="addMockBtn">Add Mock Result</button>
+    </div>
+
+    <div class="section-title">Score Trend</div>
+    <div class="card chart-card" id="mocks-chart"></div>
+
+    <div class="section-title">All Attempts <span class="count" id="mocks-count"></span></div>
+    <div id="mocks-table"></div>
+  </div>
+
+  <!-- STUDY LOG -->
+  <div class="tab-panel hidden" id="panel-studylog">
+    <div class="grid" id="sl-stats"></div>
+
+    <div class="form-card" style="margin-top:14px;">
+      <h3>Log Today's Study</h3>
+      <div class="form-grid">
+        <div class="field"><label>Date</label><input type="date" id="slDate"></div>
+        <div class="field"><label>Hours</label><input type="number" id="slHours" min="0" max="16" step="0.5" placeholder="e.g. 2.5"></div>
+        <div class="field" style="min-width:180px;"><label>Subject</label>
+          <select id="slSubject"></select>
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px;"><label>Notes</label><input type="text" id="slNotes" placeholder="optional"></div>
+      <button class="btn btn-primary btn-block" style="margin-top:12px;" id="addLogBtn">Add Entry</button>
+    </div>
+
+    <div class="section-title">Study Streak Calendar</div>
+    <div class="card">
+      <div class="heatmap-scroll"><div class="heatmap-grid" id="heatmapGrid"></div></div>
+      <div class="hm-legend">
+        <span>Less</span>
+        <span class="hm-cell"></span><span class="hm-cell level-1"></span><span class="hm-cell level-2"></span><span class="hm-cell level-3"></span><span class="hm-cell level-4"></span>
+        <span>More</span>
+      </div>
+      <div class="day-detail hidden" id="dayDetail"></div>
+    </div>
+
+    <div class="section-title">Hours by Subject</div>
+    <div class="card" id="sl-subject-bars"></div>
+
+    <div class="section-title">Recent Entries <span class="count" id="sl-count"></span></div>
+    <div id="sl-table"></div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="tab-panel hidden" id="panel-timeline">
+    <div class="card" style="margin-bottom:16px;">
+      <h3 style="margin-top:0;">Planned vs Actual</h3>
+      <p style="font-size:12.5px; color:var(--muted); margin:0;">Actual dates are pulled from milestone status updates. Mark milestones "In progress"/"Done" in the Milestones tab and this updates automatically. Red line = today.</p>
+    </div>
+    <div id="timeline-list"></div>
+  </div>
+
+</div>
+
+<div class="footer-note">Data is saved automatically to this device.<br>Use ⚙ Data → Export Backup regularly, especially before clearing Safari storage.</div>
+
+<!-- Data sheet overlay -->
+<div class="overlay hidden" id="dataOverlay">
+  <div class="sheet sheet-wrap">
+    <button class="close-sheet" id="closeSheet">✕</button>
+    <h2>Data & Backup</h2>
+    <p id="lastSavedFull">Last saved: —</p>
+    <p class="sync-status" id="fileSyncStatus">JSON file sync: not linked</p>
+    <p class="install-hint" id="installHint">Install this app from your browser menu for the best web-app experience.</p>
+    <button class="btn btn-outline btn-block hidden" id="installBtn">Install App</button>
+    <button class="btn btn-outline btn-block" id="linkJsonBtn">Link JSON Data File</button>
+    <button class="btn btn-primary btn-block" id="exportBtn">⬇ Export Backup (.json)</button>
+    <button class="btn btn-outline btn-block" id="importBtn">⬆ Import Backup</button>
+    <input type="file" id="importFile" accept="application/json" class="hidden">
+    <button class="btn btn-danger-outline btn-block" id="resetBtn">↺ Reset to Default Plan</button>
+    <p style="margin-top:14px;">Tip: export a backup after big updates. On iPad, save the download to Files so you always have a copy outside Safari's storage.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+var STORAGE_KEY = "fmge_tracker_v1";
+var FILE_SYNC_KEY = "fmge_tracker_file_sync_v1";
+var DATA_FILE_NAME = "fmge-tracker-data.json";
+var EXAM_DATE = "2027-01-09";
+var TL_START = "2026-07-22";
+var TL_END = "2027-01-09";
+
+var SUBJECT_OPTIONS = [
+  "Anatomy","Physiology","Biochemistry","Pathology","Pharmacology","Microbiology","Forensic Medicine",
+  "General Medicine","Pediatrics","Surgery","OBG","PSM","ENT","Ophthalmology","Dermatology","Psychiatry",
+  "Radiology","Anaesthesia","Orthopaedics","Mock Test Review","Revision / Mixed"
+];
+
+var PHASES = [
+  {id:1, name:"Phase 1: Hard Pre-Clinical Foundations", plannedStart:"2026-07-22", plannedEnd:"2026-09-01"},
+  {id:2, name:"Phase 2: Hard Clinical Core + Support", plannedStart:"2026-09-02", plannedEnd:"2026-10-13"},
+  {id:3, name:"Phase 3: Easy High-Weight Clinical", plannedStart:"2026-10-14", plannedEnd:"2026-11-17"},
+  {id:4, name:"Phase 4: Remaining Subjects (Batched)", plannedStart:"2026-11-18", plannedEnd:"2026-12-08"},
+  {id:5, name:"Phase 5: Grand Revision + Mock Cycle", plannedStart:"2026-12-09", plannedEnd:"2026-12-29"},
+  {id:6, name:"Phase 6: Final Taper", plannedStart:"2026-12-30", plannedEnd:"2027-01-08"}
+];
+
+function defaultMilestones(){
+  return [
+    {id:1, phase:1, task:"Anatomy — regional anatomy, embryology, neuroanatomy", marks:17, plannedStart:"2026-07-22", plannedEnd:"2026-08-04", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:2, phase:1, task:"Physiology — CVS, renal, GI, endocrine", marks:17, plannedStart:"2026-08-05", plannedEnd:"2026-08-11", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:3, phase:1, task:"Pathology — general + systemic pathology", marks:13, plannedStart:"2026-08-12", plannedEnd:"2026-08-25", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:4, phase:1, task:"Pharmacology — general principles, ANS, chemo/antimicrobials", marks:13, plannedStart:"2026-08-26", plannedEnd:"2026-09-01", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:5, phase:1, task:"Milestone: First full-length Part A mock", marks:0, plannedStart:"2026-09-01", plannedEnd:"2026-09-01", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+
+    {id:6, phase:2, task:"General Medicine — CVS, Resp, GI/Hep, Nephro, Endo, ID, Neuro", marks:33, plannedStart:"2026-09-02", plannedEnd:"2026-09-22", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:7, phase:2, task:"Pediatrics — growth/dev, neonatology, immunization, emergencies", marks:15, plannedStart:"2026-09-23", plannedEnd:"2026-09-29", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:8, phase:2, task:"Microbiology — bacteriology, virology, parasitology", marks:13, plannedStart:"2026-09-30", plannedEnd:"2026-10-06", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:9, phase:2, task:"Biochemistry — metabolism, enzymology, vitamins, mol bio", marks:17, plannedStart:"2026-10-07", plannedEnd:"2026-10-13", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:10, phase:2, task:"Milestone: Subject-wise mocks — Medicine & Pathology", marks:0, plannedStart:"2026-10-13", plannedEnd:"2026-10-13", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+
+    {id:11, phase:3, task:"Surgery — general principles, GI surg, urology, onc, trauma", marks:32, plannedStart:"2026-10-14", plannedEnd:"2026-10-27", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:12, phase:3, task:"OBG — obstetrics + gynecology", marks:30, plannedStart:"2026-10-28", plannedEnd:"2026-11-10", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:13, phase:3, task:"PSM — epidemiology, biostatistics, national programs, nutrition", marks:30, plannedStart:"2026-11-11", plannedEnd:"2026-11-17", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:14, phase:3, task:"Milestone: Full-length Part B mock", marks:0, plannedStart:"2026-11-17", plannedEnd:"2026-11-17", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+
+    {id:15, phase:4, task:"ENT + Ophthalmology", marks:30, plannedStart:"2026-11-18", plannedEnd:"2026-11-24", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:16, phase:4, task:"Forensic Medicine + Orthopaedics", marks:15, plannedStart:"2026-11-25", plannedEnd:"2026-12-01", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:17, phase:4, task:"Radiology (Dx+Tx) + Anaesthesia + Dermatology + Psychiatry", marks:25, plannedStart:"2026-12-02", plannedEnd:"2026-12-08", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:18, phase:4, task:"Milestone: Second full-length mock (all 300 Qs, timed)", marks:0, plannedStart:"2026-12-08", plannedEnd:"2026-12-08", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+
+    {id:19, phase:5, task:"Weighted full-syllabus revision (time proportional to marks)", marks:0, plannedStart:"2026-12-09", plannedEnd:"2026-12-22", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:20, phase:5, task:"Mock test cycle — 4-5 full-length timed mocks", marks:0, plannedStart:"2026-12-09", plannedEnd:"2026-12-29", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:21, phase:5, task:"Error-log review after each mock (gap vs careless vs guess)", marks:0, plannedStart:"2026-12-09", plannedEnd:"2026-12-29", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:22, phase:5, task:"Milestone: Score trend climbing toward 180+/300", marks:0, plannedStart:"2026-12-29", plannedEnd:"2026-12-29", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+
+    {id:23, phase:6, task:"Rapid revision — own notes/flashcards only, no new material", marks:0, plannedStart:"2026-12-30", plannedEnd:"2027-01-04", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:24, phase:6, task:"Final full-length mock + light review", marks:0, plannedStart:"2027-01-05", plannedEnd:"2027-01-06", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:25, phase:6, task:"Logistics check (admit card, center, ID) + rest + sleep schedule", marks:0, plannedStart:"2027-01-07", plannedEnd:"2027-01-08", status:"Not started", actualStart:"", actualEnd:"", notes:""},
+    {id:26, phase:6, task:"EXAM DAY", marks:0, plannedStart:"2027-01-09", plannedEnd:"2027-01-09", status:"Not started", actualStart:"", actualEnd:"", notes:""}
+  ];
+}
+
+function defaultData(){
+  return { milestones: defaultMilestones(), mocks: [], studyLogs: [], lastSaved: null };
+}
+
+var fileSync = { handle: null, ready: false };
+var deferredInstallPrompt = null;
+
+function supportsFileSystemAccess(){
+  return typeof window.showDirectoryPicker === "function" && typeof indexedDB !== "undefined";
+}
+
+function openFileSyncDb(){
+  return new Promise(function(resolve, reject){
+    var request = indexedDB.open("fmge_tracker_file_sync_db", 1);
+    request.onupgradeneeded = function(){
+      var db = request.result;
+      if(!db.objectStoreNames.contains("handles")) db.createObjectStore("handles");
+    };
+    request.onsuccess = function(){ resolve(request.result); };
+    request.onerror = function(){ reject(request.error); };
+  });
+}
+
+function getStoredDirectoryHandle(){
+  if(!supportsFileSystemAccess()) return Promise.resolve(null);
+  return openFileSyncDb().then(function(db){
+    return new Promise(function(resolve, reject){
+      var tx = db.transaction("handles", "readonly");
+      var store = tx.objectStore("handles");
+      var request = store.get(FILE_SYNC_KEY);
+      request.onsuccess = function(){ resolve(request.result || null); };
+      request.onerror = function(){ reject(request.error); };
+      tx.oncomplete = function(){ db.close(); };
+      tx.onerror = function(){ db.close(); };
+      tx.onabort = function(){ db.close(); };
+    });
+  }).catch(function(){ return null; });
+}
+
+function storeDirectoryHandle(handle){
+  if(!supportsFileSystemAccess()) return Promise.resolve();
+  return openFileSyncDb().then(function(db){
+    return new Promise(function(resolve, reject){
+      var tx = db.transaction("handles", "readwrite");
+      tx.objectStore("handles").put(handle, FILE_SYNC_KEY);
+      tx.oncomplete = function(){ db.close(); resolve(); };
+      tx.onerror = function(){ db.close(); reject(tx.error); };
+      tx.onabort = function(){ db.close(); reject(tx.error); };
+    });
+  });
+}
+
+async function readDataFromDirectoryHandle(handle){
+  var fileHandle = await handle.getFileHandle(DATA_FILE_NAME, {create:true});
+  var file = await fileHandle.getFile();
+  if(!file.size) return null;
+  return JSON.parse(await file.text());
+}
+
+async function writeDataToDirectoryHandle(handle, payload){
+  var fileHandle = await handle.getFileHandle(DATA_FILE_NAME, {create:true});
+  var writable = await fileHandle.createWritable();
+  try{
+    await writable.write(JSON.stringify(payload, null, 2));
+  } finally {
+    await writable.close();
+  }
+}
+
+function updateFileSyncStatus(message, isLinked){
+  var status = document.getElementById("fileSyncStatus");
+  if(!status) return;
+  status.textContent = message;
+  status.style.color = isLinked ? "var(--success)" : "var(--muted)";
+}
+
+async function refreshFileSyncStatus(){
+  var handle = await getStoredDirectoryHandle();
+  fileSync.handle = handle;
+  fileSync.ready = !!handle;
+  if(handle){
+    updateFileSyncStatus('JSON file sync: linked to '+DATA_FILE_NAME+' in selected folder', true);
+  } else {
+    updateFileSyncStatus('JSON file sync: not linked', false);
+  }
+}
+
+async function loadFromLinkedJsonIfAvailable(){
+  try{
+    var handle = await getStoredDirectoryHandle();
+    if(!handle) return null;
+    var parsed = await readDataFromDirectoryHandle(handle);
+    if(parsed && Array.isArray(parsed.milestones)){
+      fileSync.handle = handle;
+      fileSync.ready = true;
+      return parsed;
+    }
+  }catch(e){}
+  return null;
+}
+
+var data = loadData();
+
+function loadData(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      var parsed = JSON.parse(raw);
+      if(parsed && Array.isArray(parsed.milestones)) return parsed;
+    }
+  }catch(e){}
+  return defaultData();
+}
+
+var saveTimer = null;
+async function saveData(){
+  data.lastSaved = new Date().toISOString();
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+  if(fileSync.handle){
+    try{ await writeDataToDirectoryHandle(fileSync.handle, data); }
+    catch(e){
+      fileSync.handle = null;
+      fileSync.ready = false;
+      updateFileSyncStatus('JSON file sync: link lost, localStorage still saving', false);
+    }
+  }
+  flashSaved();
+}
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){ void saveData(); }, 400);
+}
+function flashSaved(){
+  var dot = document.getElementById("savedDot");
+  var txt = document.getElementById("savedText");
+  if(!dot) return;
+  txt.textContent = "Saved";
+  dot.classList.remove("flash");
+  void dot.offsetWidth;
+  dot.classList.add("flash");
+}
+
+/* ---------- date helpers ---------- */
+function todayISO(){
+  var d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0,10);
+}
+function parseISO(iso){ return new Date(iso + "T00:00:00"); }
+function daysBetween(a,b){ return Math.round((parseISO(b) - parseISO(a)) / 86400000); }
+function fmtShort(iso){
+  if(!iso) return "—";
+  var d = parseISO(iso);
+  return d.toLocaleDateString("en-US",{month:"short", day:"numeric"});
+}
+function fmtFull(iso){
+  if(!iso) return "—";
+  var d = parseISO(iso);
+  return d.toLocaleDateString("en-US",{month:"short", day:"numeric", year:"numeric"});
+}
+function pctOfTimeline(iso){
+  var total = daysBetween(TL_START, TL_END);
+  var off = daysBetween(TL_START, iso);
+  return Math.max(0, Math.min(100, (off/total)*100));
+}
+function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+
+/* ---------- derived data ---------- */
+function totalMarksAll(){
+  return data.milestones.reduce(function(s,m){ return s + (m.marks||0); }, 0);
+}
+function marksDone(){
+  return data.milestones.filter(function(m){return m.status==="Done";}).reduce(function(s,m){return s+(m.marks||0);},0);
+}
+function milestonesByPhase(pid){
+  return data.milestones.filter(function(m){ return m.phase===pid; });
+}
+function phaseStats(pid){
+  var ms = milestonesByPhase(pid);
+  var total = ms.length;
+  var done = ms.filter(function(m){return m.status==="Done";}).length;
+  var weightTotal = ms.reduce(function(s,m){return s+(m.marks||0);},0);
+  var weightDone = ms.filter(function(m){return m.status==="Done";}).reduce(function(s,m){return s+(m.marks||0);},0);
+  var pct = weightTotal>0 ? Math.round((weightDone/weightTotal)*100) : (total>0 ? Math.round((done/total)*100) : 0);
+  var starts = ms.filter(function(m){return m.actualStart;}).map(function(m){return m.actualStart;});
+  var actualStart = starts.length ? starts.sort()[0] : null;
+  var allDone = total>0 && done===total;
+  var ends = ms.filter(function(m){return m.actualEnd;}).map(function(m){return m.actualEnd;});
+  var actualEnd = (allDone && ends.length) ? ends.sort().slice(-1)[0] : null;
+  return {total:total, done:done, pct:pct, actualStart:actualStart, actualEnd:actualEnd, allDone:allDone};
+}
+
+/* ---------- render: tabs ---------- */
+document.getElementById("tabbar").addEventListener("click", function(e){
+  var btn = e.target.closest(".tab-btn");
+  if(!btn) return;
+  document.querySelectorAll(".tab-btn").forEach(function(b){b.classList.remove("active");});
+  btn.classList.add("active");
+  document.querySelectorAll(".tab-panel").forEach(function(p){p.classList.add("hidden");});
+  document.getElementById("panel-"+btn.dataset.tab).classList.remove("hidden");
+  window.scrollTo({top:0, behavior:"instant"});
+});
+
+/* ---------- countdown ---------- */
+function renderCountdown(){
+  var days = daysBetween(todayISO(), EXAM_DATE);
+  var chip = document.getElementById("countdownChip");
+  if(days > 0) chip.textContent = days + " days to exam";
+  else if(days === 0) chip.textContent = "Exam is today!";
+  else chip.textContent = "Exam day passed";
+}
+
+/* ---------- OVERVIEW ---------- */
+function renderOverview(){
+  var totalMarks = totalMarksAll();
+  var done = marksDone();
+  var pct = totalMarks>0 ? Math.round((done/totalMarks)*100) : 0;
+  var msTotal = data.milestones.length;
+  var msDone = data.milestones.filter(function(m){return m.status==="Done";}).length;
+  var msProgress = data.milestones.filter(function(m){return m.status==="In progress";}).length;
+
+  var mocks = data.mocks.slice().sort(function(a,b){return a.date<b.date?-1:1;});
+  var lastMock = mocks.length ? mocks[mocks.length-1] : null;
+  var streaks = calcStreaks();
+
+  var statsHtml = "";
+  statsHtml += '<div class="card"><h3>Overall Progress</h3><div class="donut-wrap">' + donutSVG(pct) +
+    '<div><div class="donut-label">'+pct+'%</div><div class="donut-caption">'+done+' / '+totalMarks+' marks-weighted</div></div></div></div>';
+  statsHtml += '<div class="card"><h3>Milestones</h3><div class="big-num">'+msDone+'<small> / '+msTotal+' done</small></div><div class="stat-sub">'+msProgress+' in progress</div></div>';
+  statsHtml += '<div class="card"><h3>Latest Mock</h3><div class="big-num">'+(lastMock ? lastMock.score+'<small>/300</small>' : '—')+'</div><div class="stat-sub">'+(lastMock ? fmtShort(lastMock.date) + (lastMock.score>=150 ? ' · passing' : ' · below pass line') : 'No mocks logged yet')+'</div></div>';
+  statsHtml += '<div class="card"><h3>Study Streak</h3><div class="big-num">'+streaks.current+'<small> days</small></div><div class="stat-sub">Longest: '+streaks.longest+' days</div></div>';
+  document.getElementById("ov-stats").innerHTML = statsHtml;
+
+  var subjectMilestones = data.milestones.filter(function(m){return m.marks>0;});
+  document.getElementById("ov-subject-count").textContent = subjectMilestones.length + " items";
+  var maxMarks = Math.max.apply(null, subjectMilestones.map(function(m){return m.marks;}));
+  var barsHtml = subjectMilestones.map(function(m){
+    var cls = m.status==="Done" ? "done" : m.status==="In progress" ? "progress" : "notstarted";
+    var width = m.status==="Done" ? 100 : m.status==="In progress" ? 55 : 6;
+    return '<div class="bar-row"><div class="bar-label" title="'+escapeHtml(m.task)+'">'+escapeHtml(shortTask(m.task))+'</div>' +
+      '<div class="bar-track"><div class="bar-fill '+cls+'" style="width:'+width+'%"></div></div>' +
+      '<div class="bar-marks">'+m.marks+' mk</div></div>';
+  }).join("");
+  document.getElementById("ov-subject-bars").innerHTML = barsHtml || emptyState("📋","No subjects yet");
+
+  document.getElementById("ov-mock-chart").innerHTML = mocks.length ? mockLineChart(mocks) : emptyState("📈","Log a mock test to see your score trend");
+
+  var today = todayISO();
+  var currentPhase = PHASES.find(function(p){ return today>=p.plannedStart && today<=p.plannedEnd; });
+  if(!currentPhase){
+    currentPhase = today < PHASES[0].plannedStart ? PHASES[0] : PHASES[PHASES.length-1];
+  }
+  var cps = phaseStats(currentPhase.id);
+  var overdue = today > currentPhase.plannedEnd && !cps.allDone;
+  document.getElementById("ov-current-phase").innerHTML =
+    '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">' +
+    '<div><div style="font-weight:800; font-size:15px;">'+currentPhase.name+'</div>' +
+    '<div class="stat-sub">'+fmtShort(currentPhase.plannedStart)+' – '+fmtShort(currentPhase.plannedEnd)+'</div></div>' +
+    '<div style="text-align:right;"><div style="font-size:22px; font-weight:800; color:var(--primary);">'+cps.pct+'%</div>' +
+    (overdue ? '<div class="stat-sub" style="color:var(--danger);">'+daysBetween(currentPhase.plannedEnd,today)+' days behind schedule</div>' : '<div class="stat-sub">'+cps.done+'/'+cps.total+' milestones done</div>') +
+    '</div></div>';
+}
+
+function shortTask(t){
+  var idx = t.indexOf(" — ");
+  return idx>0 ? t.slice(0, idx) : t;
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function emptyState(emoji,text){
+  return '<div class="empty-state"><span class="emoji">'+emoji+'</span>'+text+'</div>';
+}
+
+function donutSVG(pct){
+  var r = 34, c = 2*Math.PI*r;
+  var offset = c - (pct/100)*c;
+  return '<svg class="donut" width="86" height="86" viewBox="0 0 86 86">' +
+    '<circle cx="43" cy="43" r="'+r+'" fill="none" stroke="#eef1f6" stroke-width="10"/>' +
+    '<circle cx="43" cy="43" r="'+r+'" fill="none" stroke="#2563eb" stroke-width="10" stroke-linecap="round" ' +
+    'stroke-dasharray="'+c+'" stroke-dashoffset="'+offset+'" transform="rotate(-90 43 43)"/>' +
+    '</svg>';
+}
+
+/* ---------- MILESTONES ---------- */
+var openPhases = {1:true};
+var openMilestones = {};
+
+function renderMilestones(){
+  var html = "";
+  PHASES.forEach(function(phase){
+    var ms = milestonesByPhase(phase.id);
+    var stats = phaseStats(phase.id);
+    var isOpen = openPhases[phase.id];
+    html += '<div class="phase-group '+(isOpen?"open":"")+'" data-phase="'+phase.id+'">';
+    html += '<div class="phase-head" data-toggle-phase="'+phase.id+'">';
+    html += '<div class="phase-head-left"><div class="phase-name">'+phase.name+'</div>';
+    html += '<div class="phase-dates">'+fmtShort(phase.plannedStart)+' – '+fmtShort(phase.plannedEnd)+' · '+stats.done+'/'+stats.total+' done</div></div>';
+    html += '<div class="phase-head-right"><div class="phase-progress-mini"><div class="phase-progress-mini-fill" style="width:'+stats.pct+'%"></div></div>';
+    html += '<div class="phase-pct">'+stats.pct+'%</div><div class="chevron">▾</div></div></div>';
+    html += '<div class="phase-body">';
+    ms.forEach(function(m){ html += milestoneCard(m); });
+    html += '</div></div>';
+  });
+  document.getElementById("milestones-list").innerHTML = html;
+}
+
+function milestoneCard(m){
+  var open = openMilestones[m.id];
+  var dotCls = m.status==="Done" ? "done" : m.status==="In progress" ? "progress" : "notstarted";
+  var s = function(v){ return m.status===v ? " sel-"+(v==="Not started"?"notstarted":v==="In progress"?"progress":"done") : ""; };
+  return '<div class="m-card '+(open?"open":"")+'" data-mid="'+m.id+'">' +
+    '<div class="m-head" data-toggle-m="'+m.id+'">' +
+    '<div class="m-left"><span class="status-dot '+dotCls+'"></span><span class="m-title">'+escapeHtml(m.task)+'</span></div>' +
+    '<div class="m-right">' + (m.marks>0 ? '<span class="marks-badge">'+m.marks+' mk</span>' : '') +
+    '<span class="planned-dates">'+fmtShort(m.plannedStart)+'–'+fmtShort(m.plannedEnd)+'</span>' +
+    '<span class="chevron">▾</span></div></div>' +
+    '<div class="m-body"><div class="status-pills">' +
+    '<button class="status-pill'+s("Not started")+'" data-set-status="'+m.id+'" data-status="Not started">Not started</button>' +
+    '<button class="status-pill'+s("In progress")+'" data-set-status="'+m.id+'" data-status="In progress">In progress</button>' +
+    '<button class="status-pill'+s("Done")+'" data-set-status="'+m.id+'" data-status="Done">Done</button>' +
+    '</div>' +
+    '<div class="field-row">' +
+    '<div class="field"><label>Actual Start</label><input type="date" data-actual-start="'+m.id+'" value="'+m.actualStart+'"></div>' +
+    '<div class="field"><label>Actual End</label><input type="date" data-actual-end="'+m.id+'" value="'+m.actualEnd+'"></div>' +
+    '</div>' +
+    '<div class="field" style="margin-top:10px;"><label>Notes</label><textarea data-notes="'+m.id+'" placeholder="progress notes, weak topics, links...">'+escapeHtml(m.notes)+'</textarea></div>' +
+    '</div></div>';
+}
+
+document.getElementById("milestones-list").addEventListener("click", function(e){
+  var phaseToggle = e.target.closest("[data-toggle-phase]");
+  if(phaseToggle){
+    var pid = phaseToggle.dataset.togglePhase;
+    openPhases[pid] = !openPhases[pid];
+    renderMilestones();
+    return;
+  }
+  var mToggle = e.target.closest("[data-toggle-m]");
+  if(mToggle && !e.target.closest(".m-body")){
+    var mid = mToggle.dataset.toggleM;
+    openMilestones[mid] = !openMilestones[mid];
+    renderMilestones();
+    renderOverview();
+    return;
+  }
+  var statusBtn = e.target.closest("[data-set-status]");
+  if(statusBtn){
+    var id = parseInt(statusBtn.dataset.setStatus,10);
+    var status = statusBtn.dataset.status;
+    var m = data.milestones.find(function(x){return x.id===id;});
+    if(m){
+      m.status = status;
+      var t = todayISO();
+      if(status==="In progress" && !m.actualStart) m.actualStart = t;
+      if(status==="Done"){
+        if(!m.actualStart) m.actualStart = t;
+        if(!m.actualEnd) m.actualEnd = t;
+      }
+      if(status==="Not started"){ m.actualStart=""; m.actualEnd=""; }
+      openMilestones[id] = true;
+      scheduleSave();
+      renderMilestones();
+      renderOverview();
+      renderTimeline();
+    }
+  }
+});
+document.getElementById("milestones-list").addEventListener("change", function(e){
+  var t = e.target;
+  if(t.dataset.actualStart){
+    var m1 = data.milestones.find(function(x){return x.id===parseInt(t.dataset.actualStart,10);});
+    if(m1){ m1.actualStart = t.value; scheduleSave(); renderTimeline(); renderOverview(); }
+  }
+  if(t.dataset.actualEnd){
+    var m2 = data.milestones.find(function(x){return x.id===parseInt(t.dataset.actualEnd,10);});
+    if(m2){ m2.actualEnd = t.value; scheduleSave(); renderTimeline(); renderOverview(); }
+  }
+});
+document.getElementById("milestones-list").addEventListener("input", function(e){
+  var t = e.target;
+  if(t.dataset.notes){
+    var m = data.milestones.find(function(x){return x.id===parseInt(t.dataset.notes,10);});
+    if(m){ m.notes = t.value; scheduleSave(); }
+  }
+});
+
+/* ---------- MOCK TESTS ---------- */
+function renderMocks(){
+  var mocks = data.mocks.slice().sort(function(a,b){return a.date<b.date?-1:1;});
+  document.getElementById("mocks-count").textContent = mocks.length;
+  document.getElementById("mocks-chart").innerHTML = mocks.length ? mockLineChart(mocks) : emptyState("📈","No mock tests logged yet — add your first one above");
+
+  if(!mocks.length){
+    document.getElementById("mocks-table").innerHTML = "";
+    return;
+  }
+  var rows = mocks.slice().reverse().map(function(m){
+    var passCls = m.score>=150 ? "color:var(--success); font-weight:700;" : "color:var(--danger); font-weight:700;";
+    return "<tr><td>"+fmtFull(m.date)+"</td><td style='"+passCls+"'>"+m.score+"/300</td>" +
+      "<td>"+(m.partA!==null && m.partA!==undefined && m.partA!=="" ? m.partA+"/100" : "—")+"</td>" +
+      "<td>"+(m.partB!==null && m.partB!==undefined && m.partB!=="" ? m.partB+"/200" : "—")+"</td>" +
+      "<td>"+escapeHtml(m.notes||"")+"</td>" +
+      "<td><button class='del-btn' data-del-mock='"+m.id+"'>✕</button></td></tr>";
+  }).join("");
+  document.getElementById("mocks-table").innerHTML = '<div class="table-wrap"><table><thead><tr><th>Date</th><th>Score</th><th>Part A</th><th>Part B</th><th>Notes</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+function mockLineChart(mocks){
+  var W=600,H=220,ML=36,MR=14,MT=14,MB=28;
+  var innerW = W-ML-MR, innerH = H-MT-MB;
+  function xAt(i){ return mocks.length<=1 ? ML+innerW/2 : ML + (i/(mocks.length-1))*innerW; }
+  function yAt(score){ return MT + innerH - (clamp(score,0,300)/300)*innerH; }
+  var passY = yAt(150), targetY = yAt(180);
+  var pts = mocks.map(function(m,i){ return xAt(i)+","+yAt(m.score); }).join(" ");
+  var dots = mocks.map(function(m,i){
+    return '<circle cx="'+xAt(i)+'" cy="'+yAt(m.score)+'" r="4.5" fill="#2563eb" stroke="#fff" stroke-width="1.5"/>' +
+      '<text x="'+xAt(i)+'" y="'+(yAt(m.score)-10)+'" font-size="11" text-anchor="middle" fill="#1e293b" font-weight="700">'+m.score+'</text>';
+  }).join("");
+  var labels = mocks.map(function(m,i){
+    if(mocks.length>8 && i%2!==0) return "";
+    return '<text x="'+xAt(i)+'" y="'+(H-8)+'" font-size="10" text-anchor="middle" fill="#64748b">'+fmtShort(m.date)+'</text>';
+  }).join("");
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">' +
+    '<line x1="'+ML+'" y1="'+passY+'" x2="'+(W-MR)+'" y2="'+passY+'" stroke="#dc2626" stroke-width="1" stroke-dasharray="4,3"/>' +
+    '<text x="'+(W-MR)+'" y="'+(passY-4)+'" font-size="10" text-anchor="end" fill="#dc2626">Pass 150</text>' +
+    '<line x1="'+ML+'" y1="'+targetY+'" x2="'+(W-MR)+'" y2="'+targetY+'" stroke="#16a34a" stroke-width="1" stroke-dasharray="4,3"/>' +
+    '<text x="'+(W-MR)+'" y="'+(targetY-4)+'" font-size="10" text-anchor="end" fill="#16a34a">Target 180</text>' +
+    '<line x1="'+ML+'" y1="'+MT+'" x2="'+ML+'" y2="'+(H-MB)+'" stroke="#e2e8f0"/>' +
+    '<line x1="'+ML+'" y1="'+(H-MB)+'" x2="'+(W-MR)+'" y2="'+(H-MB)+'" stroke="#e2e8f0"/>' +
+    '<polyline points="'+pts+'" fill="none" stroke="#2563eb" stroke-width="2.5"/>' +
+    dots + labels +
+    '</svg>' +
+    '<div class="chart-legend"><span><span class="dot" style="background:#2563eb;"></span>Score</span><span><span class="dot" style="background:#dc2626;"></span>Pass line (150)</span><span><span class="dot" style="background:#16a34a;"></span>Target (180)</span></div>';
+}
+
+var mockIdSeq = 1;
+document.getElementById("addMockBtn").addEventListener("click", function(){
+  var date = document.getElementById("mockDate").value || todayISO();
+  var score = document.getElementById("mockScore").value;
+  if(score===""){ alert("Enter a score out of 300."); return; }
+  score = clamp(parseInt(score,10),0,300);
+  var partA = document.getElementById("mockPartA").value;
+  var partB = document.getElementById("mockPartB").value;
+  var notes = document.getElementById("mockNotes").value;
+  var maxId = data.mocks.reduce(function(mx,m){return Math.max(mx,m.id);},0);
+  data.mocks.push({id:maxId+1, date:date, score:score, partA:partA, partB:partB, notes:notes});
+  document.getElementById("mockScore").value = "";
+  document.getElementById("mockPartA").value = "";
+  document.getElementById("mockPartB").value = "";
+  document.getElementById("mockNotes").value = "";
+  scheduleSave();
+  renderMocks();
+  renderOverview();
+});
+document.getElementById("mocks-table").addEventListener("click", function(e){
+  var btn = e.target.closest("[data-del-mock]");
+  if(btn){
+    var id = parseInt(btn.dataset.delMock,10);
+    if(confirm("Delete this mock result?")){
+      data.mocks = data.mocks.filter(function(m){return m.id!==id;});
+      scheduleSave();
+      renderMocks();
+      renderOverview();
+    }
+  }
+});
+
+/* ---------- STUDY LOG ---------- */
+function calcStreaks(){
+  var set = {};
+  data.studyLogs.forEach(function(l){ set[l.date] = true; });
+  var cur = 0;
+  var d = new Date();
+  d.setHours(0,0,0,0);
+  while(true){
+    var iso = isoFromDate(d);
+    if(set[iso]){ cur++; d.setDate(d.getDate()-1); } else break;
+  }
+  var dates = Object.keys(set).sort();
+  var longest = 0, run = 0, prev = null;
+  dates.forEach(function(iso){
+    var dt = parseISO(iso);
+    if(prev && (dt-prev)/86400000===1) run++; else run=1;
+    if(run>longest) longest = run;
+    prev = dt;
+  });
+  return {current:cur, longest:longest};
+}
+function isoFromDate(d){
+  var dd = new Date(d);
+  dd.setMinutes(dd.getMinutes() - dd.getTimezoneOffset());
+  return dd.toISOString().slice(0,10);
+}
+
+function renderStudyLog(){
+  var totalHours = data.studyLogs.reduce(function(s,l){return s+(parseFloat(l.hours)||0);},0);
+  var streaks = calcStreaks();
+  var statsHtml = "";
+  statsHtml += '<div class="card"><h3>Total Hours</h3><div class="big-num">'+round1(totalHours)+'<small> hrs</small></div><div class="stat-sub">'+data.studyLogs.length+' entries logged</div></div>';
+  statsHtml += '<div class="card"><h3>Current Streak</h3><div class="big-num">'+streaks.current+'<small> days</small></div><div class="stat-sub">Longest: '+streaks.longest+' days</div></div>';
+  var last7 = last7DaysHours();
+  statsHtml += '<div class="card"><h3>Last 7 Days</h3><div class="big-num">'+round1(last7)+'<small> hrs</small></div><div class="stat-sub">'+round1(last7/7)+' hrs/day avg</div></div>';
+  document.getElementById("sl-stats").innerHTML = statsHtml;
+
+  document.getElementById("heatmapGrid").innerHTML = heatmapHTML();
+
+  var bySubject = {};
+  data.studyLogs.forEach(function(l){
+    bySubject[l.subject] = (bySubject[l.subject]||0) + (parseFloat(l.hours)||0);
+  });
+  var subjEntries = Object.keys(bySubject).map(function(k){return {subject:k, hours:bySubject[k]};}).sort(function(a,b){return b.hours-a.hours;});
+  var maxH = subjEntries.length ? subjEntries[0].hours : 1;
+  var palette = ["#2563eb","#0d9488","#f59e0b","#dc2626","#7c3aed","#059669","#db2777","#ea580c","#4f46e5"];
+  var barsHtml = subjEntries.map(function(e,i){
+    var w = maxH>0 ? Math.max(4,(e.hours/maxH)*100) : 0;
+    return '<div class="bar-row"><div class="bar-label">'+escapeHtml(e.subject)+'</div>' +
+      '<div class="bar-track"><div class="bar-fill" style="width:'+w+'%; background:'+palette[i%palette.length]+';"></div></div>' +
+      '<div class="bar-marks">'+round1(e.hours)+'h</div></div>';
+  }).join("");
+  document.getElementById("sl-subject-bars").innerHTML = barsHtml || emptyState("📚","Log study hours to see subject breakdown");
+
+  var logs = data.studyLogs.slice().sort(function(a,b){return a.date<b.date?1:-1;});
+  document.getElementById("sl-count").textContent = logs.length;
+  if(logs.length){
+    var rows = logs.map(function(l){
+      return "<tr><td>"+fmtFull(l.date)+"</td><td>"+round1(l.hours)+"h</td><td>"+escapeHtml(l.subject)+"</td><td>"+escapeHtml(l.notes||"")+"</td>" +
+        "<td><button class='del-btn' data-del-log='"+l.id+"'>✕</button></td></tr>";
+    }).join("");
+    document.getElementById("sl-table").innerHTML = '<div class="table-wrap"><table><thead><tr><th>Date</th><th>Hours</th><th>Subject</th><th>Notes</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  } else {
+    document.getElementById("sl-table").innerHTML = "";
+  }
+}
+function round1(n){ return Math.round(n*10)/10; }
+function last7DaysHours(){
+  var total = 0;
+  for(var i=0;i<7;i++){
+    var d = new Date(); d.setDate(d.getDate()-i);
+    var iso = isoFromDate(d);
+    data.studyLogs.forEach(function(l){ if(l.date===iso) total += (parseFloat(l.hours)||0); });
+  }
+  return total;
+}
+
+function heatmapHTML(){
+  var byDate = {};
+  data.studyLogs.forEach(function(l){ byDate[l.date] = (byDate[l.date]||0) + (parseFloat(l.hours)||0); });
+  var start = parseISO(TL_START);
+  var startDow = start.getDay();
+  var gridStart = new Date(start);
+  gridStart.setDate(gridStart.getDate() - startDow);
+  var end = parseISO(TL_END);
+  var cells = [];
+  var d = new Date(gridStart);
+  while(d <= end){
+    var iso = isoFromDate(d);
+    var hrs = byDate[iso] || 0;
+    var lvl = hrs<=0 ? 0 : hrs<1 ? 1 : hrs<2 ? 2 : hrs<3 ? 3 : 4;
+    var inRange = iso>=TL_START && iso<=TL_END;
+    cells.push('<div class="hm-cell '+(lvl>0?"level-"+lvl:"")+'" style="'+(inRange?"":"visibility:hidden;")+'" data-date="'+iso+'" title="'+iso+(hrs?": "+round1(hrs)+"h":"")+'"></div>');
+    d.setDate(d.getDate()+1);
+  }
+  return cells.join("");
+}
+
+document.getElementById("heatmapGrid").addEventListener("click", function(e){
+  var cell = e.target.closest(".hm-cell");
+  if(!cell || !cell.dataset.date) return;
+  var iso = cell.dataset.date;
+  var entries = data.studyLogs.filter(function(l){return l.date===iso;});
+  var panel = document.getElementById("dayDetail");
+  panel.classList.remove("hidden");
+  if(!entries.length){
+    panel.innerHTML = '<strong>'+fmtFull(iso)+'</strong><div class="stat-sub" style="margin-top:6px;">No study logged this day.</div>';
+  } else {
+    var total = entries.reduce(function(s,e){return s+(parseFloat(e.hours)||0);},0);
+    panel.innerHTML = '<strong>'+fmtFull(iso)+' — '+round1(total)+' hrs</strong>' +
+      entries.map(function(e){ return '<div class="entry"><span>'+escapeHtml(e.subject)+(e.notes?" — "+escapeHtml(e.notes):"")+'</span><span>'+round1(e.hours)+'h</span></div>'; }).join("");
+  }
+  document.getElementById("slDate").value = iso;
+});
+
+var subjSelect = document.getElementById("slSubject");
+subjSelect.innerHTML = SUBJECT_OPTIONS.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join("");
+
+document.getElementById("addLogBtn").addEventListener("click", function(){
+  var date = document.getElementById("slDate").value || todayISO();
+  var hours = document.getElementById("slHours").value;
+  if(hours===""){ alert("Enter hours studied."); return; }
+  var subject = document.getElementById("slSubject").value;
+  var notes = document.getElementById("slNotes").value;
+  var maxId = data.studyLogs.reduce(function(mx,l){return Math.max(mx,l.id);},0);
+  data.studyLogs.push({id:maxId+1, date:date, hours:parseFloat(hours), subject:subject, notes:notes});
+  document.getElementById("slHours").value = "";
+  document.getElementById("slNotes").value = "";
+  scheduleSave();
+  renderStudyLog();
+  renderOverview();
+});
+document.getElementById("sl-table").addEventListener("click", function(e){
+  var btn = e.target.closest("[data-del-log]");
+  if(btn){
+    var id = parseInt(btn.dataset.delLog,10);
+    if(confirm("Delete this entry?")){
+      data.studyLogs = data.studyLogs.filter(function(l){return l.id!==id;});
+      scheduleSave();
+      renderStudyLog();
+      renderOverview();
+    }
+  }
+});
+
+/* ---------- TIMELINE ---------- */
+function renderTimeline(){
+  var today = todayISO();
+  var html = "";
+  PHASES.forEach(function(phase){
+    var stats = phaseStats(phase.id);
+    var plannedLeft = pctOfTimeline(phase.plannedStart);
+    var plannedWidth = pctOfTimeline(phase.plannedEnd) - plannedLeft;
+
+    var badge = "", badgeCls = "pending";
+    var actualBarWidth = 0, actualBarLeft = plannedLeft;
+    if(stats.actualStart){
+      actualBarLeft = pctOfTimeline(stats.actualStart);
+      var endForBar = stats.actualEnd || (today<TL_END ? today : TL_END);
+      actualBarWidth = Math.max(1, pctOfTimeline(endForBar) - actualBarLeft);
+    }
+    if(stats.allDone && stats.actualEnd){
+      var diff = daysBetween(phase.plannedEnd, stats.actualEnd);
+      if(diff>0){ badge = diff+" day"+(diff===1?"":"s")+" late"; badgeCls="late"; }
+      else if(diff<0){ badge = Math.abs(diff)+" day"+(Math.abs(diff)===1?"":"s")+" early"; badgeCls="early"; }
+      else { badge = "On time"; badgeCls="ontrack"; }
+    } else if(today > phase.plannedEnd){
+      var overdue = daysBetween(phase.plannedEnd, today);
+      badge = overdue+" day"+(overdue===1?"":"s")+" behind schedule"; badgeCls="late";
+    } else if(stats.actualStart){
+      badge = "In progress"; badgeCls="ontrack";
+    } else {
+      badge = "Not started"; badgeCls="pending";
+    }
+
+    var todayPct = pctOfTimeline(today);
+    var showTodayLine = today>=TL_START && today<=TL_END;
+
+    html += '<div class="gantt-row">';
+    html += '<div class="gantt-label-row"><span class="gantt-title">'+phase.name+'</span><span class="gantt-badge '+badgeCls+'">'+badge+'</span></div>';
+    html += '<div class="gantt-sub">Planned: '+fmtShort(phase.plannedStart)+' – '+fmtShort(phase.plannedEnd)+'</div>';
+    html += '<div class="gantt-track">' +
+      '<div class="gantt-bar gantt-planned" style="left:'+plannedLeft+'%; width:'+plannedWidth+'%;"></div>' +
+      (showTodayLine ? '<div class="gantt-today-line" style="left:'+todayPct+'%;"></div>' : '') +
+      '</div>';
+    html += '<div class="gantt-actual">' +
+      (actualBarWidth>0 ? '<div class="gantt-actual-fill" style="left:'+actualBarLeft+'%; width:'+actualBarWidth+'%;"></div>' : '') +
+      (showTodayLine ? '<div class="gantt-today-line" style="left:'+todayPct+'%;"></div>' : '') +
+      '</div>';
+    html += '<div class="gantt-sub">Actual: '+(stats.actualStart?fmtShort(stats.actualStart):"—")+' – '+(stats.actualEnd?fmtShort(stats.actualEnd):(stats.actualStart?"in progress":"—"))+' · '+stats.done+'/'+stats.total+' milestones ('+stats.pct+'%)</div>';
+    html += '</div>';
+  });
+  document.getElementById("timeline-list").innerHTML = html;
+}
+
+/* ---------- DATA SHEET (export/import/reset) ---------- */
+document.getElementById("dataBtn").addEventListener("click", function(){
+  document.getElementById("lastSavedFull").textContent = "Last saved: " + (data.lastSaved ? new Date(data.lastSaved).toLocaleString() : "never — make a change to save");
+  document.getElementById("dataOverlay").classList.remove("hidden");
+});
+document.getElementById("linkJsonBtn").addEventListener("click", async function(){
+  if(!supportsFileSystemAccess()){
+    alert("This browser does not support automatic JSON file syncing. Use Export Backup instead.");
+    return;
+  }
+  try{
+    var dirHandle = await window.showDirectoryPicker({mode:"readwrite"});
+    await storeDirectoryHandle(dirHandle);
+    fileSync.handle = dirHandle;
+    fileSync.ready = true;
+    updateFileSyncStatus('JSON file sync: linked to '+DATA_FILE_NAME+' in selected folder', true);
+    await saveData();
+  }catch(e){}
+});
+window.addEventListener("beforeinstallprompt", function(e){
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  var hint = document.getElementById("installHint");
+  var installBtn = document.getElementById("installBtn");
+  if(hint) hint.textContent = "Install available: use the install button or browser menu to add this app to your device.";
+  if(installBtn) installBtn.classList.remove("hidden");
+});
+document.getElementById("installBtn").addEventListener("click", async function(){
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  document.getElementById("installBtn").classList.add("hidden");
+});
+document.getElementById("closeSheet").addEventListener("click", function(){
+  document.getElementById("dataOverlay").classList.add("hidden");
+});
+document.getElementById("dataOverlay").addEventListener("click", function(e){
+  if(e.target.id==="dataOverlay") document.getElementById("dataOverlay").classList.add("hidden");
+});
+document.getElementById("exportBtn").addEventListener("click", function(){
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  var stamp = todayISO();
+  a.href = url;
+  a.download = "fmge-tracker-backup-"+stamp+".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);}, 1000);
+});
+document.getElementById("importBtn").addEventListener("click", function(){
+  document.getElementById("importFile").click();
+});
+document.getElementById("importFile").addEventListener("change", function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      var parsed = JSON.parse(ev.target.result);
+      if(!parsed || !Array.isArray(parsed.milestones)) throw new Error("bad format");
+      if(confirm("Import this backup? This will replace all current data.")){
+        data = parsed;
+        saveData();
+        renderAll();
+        document.getElementById("dataOverlay").classList.add("hidden");
+      }
+    }catch(err){
+      alert("Could not read that file — make sure it's a tracker backup JSON.");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+document.getElementById("resetBtn").addEventListener("click", function(){
+  if(confirm("Reset all progress, mocks, and study logs back to the default plan? This cannot be undone (export a backup first if unsure).")){
+    data = defaultData();
+    void saveData();
+    renderAll();
+    document.getElementById("dataOverlay").classList.add("hidden");
+  }
+});
+
+/* ---------- init ---------- */
+function renderAll(){
+  renderCountdown();
+  renderOverview();
+  renderMilestones();
+  renderMocks();
+  renderStudyLog();
+  renderTimeline();
+}
+document.getElementById("mockDate").value = todayISO();
+document.getElementById("slDate").value = todayISO();
+renderAll();
+void refreshFileSyncStatus();
+loadFromLinkedJsonIfAvailable().then(function(parsed){
+  if(parsed){
+    data = parsed;
+    renderAll();
+  }
+});
+if("serviceWorker" in navigator){
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  });
+}
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "FMGE Prep Tracker",
+  "short_name": "FMGE Tracker",
+  "start_url": "./tracker.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f5fa",
+  "theme_color": "#1e40af",
+  "description": "A mobile-friendly FMGE prep tracker with milestones, mocks, and study logs.",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
