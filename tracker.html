@@ -576,6 +576,20 @@ function loadData(){
 }
 
 var saveTimer = null;
+async function pushToSupabase(){
+  var client = getSupabaseClient();
+  if(!client){
+    updateCloudSyncStatus("Cloud sync: not configured", false);
+    return;
+  }
+  try{
+    var result = await client.from("fmge_tracker_state").upsert({id: SYNC_ROW_ID, payload: data, updated_at: data.lastSaved});
+    if(result.error) throw result.error;
+    updateCloudSyncStatus("Cloud sync: saved", true);
+  }catch(e){
+    updateCloudSyncStatus("Cloud sync: offline — saved locally only", false);
+  }
+}
 async function saveData(){
   data.lastSaved = new Date().toISOString();
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
@@ -587,6 +601,7 @@ async function saveData(){
       updateFileSyncStatus('JSON file sync: link lost, localStorage still saving', false);
     }
   }
+  void pushToSupabase();
   flashSaved();
 }
 function scheduleSave(){
